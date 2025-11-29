@@ -6,5 +6,9 @@
       <default>true</default>
     </key>
 
+    <key name="click-to-close-overview" type="b">
+      <default>true</default>
+    </key>
+
   </schema>
 </schemalist>

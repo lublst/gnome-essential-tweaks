@@ -28,7 +28,14 @@ export default class EssentialTweaksPreferences extends ExtensionPreferences {
     });
     group.add(noWindowAttentionRow);
 
+    const clickToCloseOverviewRow = new Adw.SwitchRow({
+      title: _("Click to Close the Overview"),
+      subtitle: _("Close the overview when clicking on the empty space around the background")
+    });
+    group.add(clickToCloseOverviewRow);
+
     // Bind settings
     window._settings.bind("no-window-attention", noWindowAttentionRow, "active", Gio.SettingsBindFlags.DEFAULT);
+    window._settings.bind("click-to-close-overview", clickToCloseOverviewRow, "active", Gio.SettingsBindFlags.DEFAULT);
   }
 }
