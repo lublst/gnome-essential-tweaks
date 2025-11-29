@@ -1,0 +1,10 @@
+{
+  "description": "A GNOME Shell extension",
+  "name": "Essential Tweaks",
+  "shell-version": [
+    "49"
+  ],
+  "url": "https://github.com/lublst/gnome-essential-tweaks",
+  "uuid": "essential-tweaks@lublst.github.io",
+  "version": 1
+}
