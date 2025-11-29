@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.essential-tweaks" path="/org/gnome/shell/extensions/essential-tweaks/">
+
+    <key name="no-window-attention" type="b">
+      <default>true</default>
+    </key>
+
+  </schema>
+</schemalist>

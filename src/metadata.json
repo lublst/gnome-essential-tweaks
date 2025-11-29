@@ -1,6 +1,7 @@
 {
   "description": "A GNOME Shell extension",
   "name": "Essential Tweaks",
+  "settings-schema": "org.gnome.shell.extensions.essential-tweaks",
   "shell-version": [
     "49"
   ],
