@@ -34,6 +34,17 @@ export default class EssentialTweaksPreferences extends ExtensionPreferences {
     });
     overviewGroup.add(workspaceWraparoundRow);
 
+    const appearanceGroup = new Adw.PreferencesGroup({
+      title: _('Appearance')
+    });
+    page.add(appearanceGroup);
+
+    const screenCornersRow = new Adw.SwitchRow({
+      title: _('Screen Corners'),
+      subtitle: _('Slightly round the corners of the screen and the panel')
+    });
+    appearanceGroup.add(screenCornersRow);
+
     const otherGroup = new Adw.PreferencesGroup({
       title: _('Other')
     });
@@ -50,6 +61,7 @@ export default class EssentialTweaksPreferences extends ExtensionPreferences {
 
     window._settings.bind('click-to-close-overview', clickToCloseOverviewRow, 'active', Gio.SettingsBindFlags.DEFAULT);
     window._settings.bind('no-window-attention', noWindowAttentionRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+    window._settings.bind('screen-corners', screenCornersRow, 'active', Gio.SettingsBindFlags.DEFAULT);
     window._settings.bind('show-overview-on-startup', showOverviewOnStartupRow, 'active', Gio.SettingsBindFlags.DEFAULT);
     window._settings.bind('workspace-wraparound', workspaceWraparoundRow, 'active', Gio.SettingsBindFlags.DEFAULT);
   }

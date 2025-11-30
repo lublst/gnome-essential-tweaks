@@ -4,6 +4,8 @@ import Meta from 'gi://Meta';
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
+import { ScreenCorners } from './corners.js';
+
 export default class EssentialTweaksExtension extends Extension {
   enable() {
     this._settings = this.getSettings();
@@ -15,6 +17,9 @@ export default class EssentialTweaksExtension extends Extension {
       ['click-to-close-overview',
         this._updateClickToCloseOverview.bind(this),
         this._disableClickToCloseOverview.bind(this)],
+      ['screen-corners',
+        this._updateScreenCorners.bind(this),
+        this._disableScreenCorners.bind(this)],
       ['show-overview-on-startup',
         this._updateShowOverviewOnStartup.bind(this),
         this._enableShowOverviewOnStartup.bind(this)],
@@ -116,21 +121,77 @@ export default class EssentialTweaksExtension extends Extension {
     }
   }
 
+  _enableScreenCorners() {
+    const self = this;
+
+    function init() {
+      self._screenCorners = new ScreenCorners();
+
+      update();
+    }
+
+    function update() {
+      if (self._screenCorners) {
+        self._screenCorners.update();
+      }
+    }
+
+    if (Main.layoutManager._startingUp) {
+      this._screenCornerStartupHandler = Main.layoutManager.connect('startup-complete', init);
+    } else {
+      init();
+    }
+
+    this._monitorsChangedHandler = Main.layoutManager.connect('monitors-changed', update);
+    this._workareasChangedHandler = global.display.connect('workareas-changed', update);
+  }
+
+  _disableScreenCorners() {
+    if (this._screenCorners) {
+      this._screenCorners.remove();
+    }
+
+    if (this._screenCornerStartupHandler) {
+      Main.layoutManager.disconnect(this._screenCornerStartupHandler);
+    }
+
+    if (this._monitorsChangedHandler) {
+      Main.layoutManager.disconnect(this._monitorsChangedHandler);
+    }
+
+    if (this._workareasChangedHandler) {
+      global.display.disconnect(this._workareasChangedHandler);
+    }
+
+    this._screenCorners = null;
+    this._screenCornerStartupHandler = null;
+    this._monitorsChangedHandler = null;
+    this._workareasChangedHandler = null;
+  }
+
+  _updateScreenCorners() {
+    if (this._settings.get_boolean('screen-corners')) {
+      this._enableScreenCorners();
+    } else {
+      this._disableScreenCorners();
+    }
+  }
+
   _enableShowOverviewOnStartup() {
     if (this._originalHasOverview != null) {
       Main.sessionMode.hasOverview = this._originalHasOverview;
     }
 
-    if (this._startupHandler) {
-      Main.layoutManager.disconnect(this._startupHandler);
+    if (this._overviewStartupHandler) {
+      Main.layoutManager.disconnect(this._overviewStartupHandler);
     }
 
     this._originalHasOverview = null;
-    this._startupHandler = null;
+    this._overviewStartupHandler = null;
   }
 
   _disableShowOverviewOnStartup() {
-    if (!Main.layoutManager._startingUp || this._startupHandler) {
+    if (!Main.layoutManager._startingUp || this._overviewStartupHandler) {
       return;
     }
 
@@ -142,7 +203,7 @@ export default class EssentialTweaksExtension extends Extension {
     Main.sessionMode.hasOverview = false;
 
     // Restore the original state after startup is complete
-    this._startupHandler = Main.layoutManager.connect('startup-complete', () => {
+    this._overviewStartupHandler = Main.layoutManager.connect('startup-complete', () => {
       this._enableShowOverviewOnStartup();
     });
   }
