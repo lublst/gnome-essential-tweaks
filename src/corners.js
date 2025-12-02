@@ -32,7 +32,6 @@ export class ScreenCorners {
   }
 
   remove() {
-    // Remove old screen corners
     if (Main.layoutManager._screenCorners) {
       Main.layoutManager._screenCorners.forEach(corner => {
         corner.destroy();
@@ -59,11 +58,11 @@ export class PanelCorners {
   update_corner(corner) {
     Main.panel.bind_property('style', corner, 'style', GObject.BindingFlags.SYNC_CREATE);
     Main.panel.add_child(corner);
+
     corner.vfunc_style_changed();
   }
 
   remove() {
-    // Remove old panel corners
     if (Main.panel._leftCorner) {
       this.remove_corner(Main.panel._leftCorner);
     }
@@ -78,6 +77,7 @@ export class PanelCorners {
 
   remove_corner(corner) {
     Main.panel.remove_child(corner);
+
     corner.disconnectSignals();
     corner.destroy();
   }
@@ -200,7 +200,7 @@ export class PanelCorner extends St.DrawingArea {
     this._positionChangeHandler = Main.panel.connect('notify::position', this._update_corner_position.bind(this));
     this._sizeChangeHandler = Main.panel.connect('notify::size', this._update_corner_position.bind(this));
 
-    this._update_corner_position();
+    this.set_opacity(0);
   }
 
   _update_corner_position() {
