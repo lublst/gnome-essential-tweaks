@@ -4,12 +4,13 @@ import Meta from 'gi://Meta';
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
-import { ScreenCorners } from './corners.js';
+import { ScreenCorners, PanelCorners } from './corners.js';
 
 export default class EssentialTweaksExtension extends Extension {
   enable() {
     this._settings = this.getSettings();
-    this._signals = [];
+    this._settingsSignals = [];
+    this._sharedSignals = {};
     this._modules = [
       ['no-window-attention',
         this._updateNoWindowAttention.bind(this),
@@ -17,12 +18,15 @@ export default class EssentialTweaksExtension extends Extension {
       ['click-to-close-overview',
         this._updateClickToCloseOverview.bind(this),
         this._disableClickToCloseOverview.bind(this)],
+      ['panel-corners',
+        this._updatePanelCorners.bind(this),
+        this._disablePanelCorners.bind(this)],
       ['screen-corners',
         this._updateScreenCorners.bind(this),
         this._disableScreenCorners.bind(this)],
       ['show-overview-on-startup',
-        this._updateShowOverviewOnStartup.bind(this),
-        this._enableShowOverviewOnStartup.bind(this)],
+        this._updateNoOverviewOnStartup.bind(this),
+        this._disableNoOverviewOnStartup.bind(this)],
       ['workspace-wraparound',
         this._updateWorkspaceWraparound.bind(this),
         this._disableWorkspaceWraparound.bind(this)]
@@ -32,20 +36,49 @@ export default class EssentialTweaksExtension extends Extension {
     this._modules.forEach(([name, update, _disable]) => {
       update();
 
-      this._signals.push(this._settings.connect(`changed::${name}`, () => {
+      this._settingsSignals.push(this._settings.connect(`changed::${name}`, () => {
         update();
       }));
+    });
+
+    // Signals shared by modules
+    this._startupHandler = Main.layoutManager.connect('startup-complete', () => {
+      this._handleSharedSignal('startup-complete');
+    });
+
+    this._monitorsChangedHandler = Main.layoutManager.connect('monitors-changed', () => {
+      this._handleSharedSignal('monitors-changed');
+    });
+
+    this._workareasChangedHandler = global.display.connect('workareas-changed', () => {
+      this._handleSharedSignal('workareas-changed');
     });
   }
 
   disable() {
+    // Disconnect shared signals
+    Main.layoutManager.disconnect(this._startupHandler);
+    Main.layoutManager.disconnect(this._monitorsChangedHandler);
+    global.display.disconnect(this._workareasChangedHandler);
+
+    this._startupHandler = null;
+    this._monitorsChangedHandler = null;
+    this._workareasChangedHandler = null;
+
     // Disconnect signals and disable all modules
-    this._signals.forEach(signal => this._settings.disconnect(signal));
+    this._settingsSignals.forEach(signal => this._settings.disconnect(signal));
     this._modules.forEach(([_name, _update, disable]) => disable());
 
     this._settings = null;
-    this._signals = null;
+    this._settingsSignals = null;
+    this._sharedSignals = null;
     this._modules = null;
+  }
+
+  _handleSharedSignal(signalName) {
+    Object.values(this._sharedSignals)
+      .filter(([name, _]) => name === signalName)
+      .forEach(([_, handler]) => handler());
   }
 
   _enableClickToCloseOverview() {
@@ -121,29 +154,70 @@ export default class EssentialTweaksExtension extends Extension {
     }
   }
 
-  _enableScreenCorners() {
-    const self = this;
-
-    function init() {
-      self._screenCorners = new ScreenCorners();
+  _enablePanelCorners() {
+    const init = () => {
+      this._panelCorners = new PanelCorners();
 
       update();
     }
 
-    function update() {
-      if (self._screenCorners) {
-        self._screenCorners.update();
+    const update = () => {
+      if (this._panelCorners) {
+        this._panelCorners.update();
       }
     }
 
     if (Main.layoutManager._startingUp) {
-      this._screenCornerStartupHandler = Main.layoutManager.connect('startup-complete', init);
+      this._sharedSignals.panelCornersStartup = ['startup-complete', init];
     } else {
       init();
     }
 
-    this._monitorsChangedHandler = Main.layoutManager.connect('monitors-changed', update);
-    this._workareasChangedHandler = global.display.connect('workareas-changed', update);
+    this._sharedSignals.panelCornersMonitorsChanged = ['monitors-changed', update];
+    this._sharedSignals.panelCornersWorkareasChanged = ['workareas-changed', update];
+  }
+
+  _disablePanelCorners() {
+    if (this._panelCorners) {
+      this._panelCorners.remove();
+    }
+
+    this._panelCorners = null;
+
+    delete this._sharedSignals.panelCornersStartup;
+    delete this._sharedSignals.panelCornersMonitorsChanged;
+    delete this._sharedSignals.panelCornersWorkareasChanged;
+  }
+
+  _updatePanelCorners() {
+    if (this._settings.get_boolean('panel-corners')) {
+      this._enablePanelCorners();
+    } else {
+      this._disablePanelCorners();
+    }
+  }
+
+  _enableScreenCorners() {
+    const init = () => {
+      this._screenCorners = new ScreenCorners();
+
+      update();
+    }
+
+    const update = () => {
+      if (this._screenCorners) {
+        this._screenCorners.update();
+      }
+    }
+
+    if (Main.layoutManager._startingUp) {
+      this._sharedSignals.screenCornersStartup = ['startup-complete', init];
+    } else {
+      init();
+    }
+
+    this._sharedSignals.screenCornersMonitorsChanged = ['monitors-changed', update];
+    this._sharedSignals.screenCornersWorkareasChanged = ['workareas-changed', update];
   }
 
   _disableScreenCorners() {
@@ -151,22 +225,11 @@ export default class EssentialTweaksExtension extends Extension {
       this._screenCorners.remove();
     }
 
-    if (this._screenCornerStartupHandler) {
-      Main.layoutManager.disconnect(this._screenCornerStartupHandler);
-    }
-
-    if (this._monitorsChangedHandler) {
-      Main.layoutManager.disconnect(this._monitorsChangedHandler);
-    }
-
-    if (this._workareasChangedHandler) {
-      global.display.disconnect(this._workareasChangedHandler);
-    }
-
     this._screenCorners = null;
-    this._screenCornerStartupHandler = null;
-    this._monitorsChangedHandler = null;
-    this._workareasChangedHandler = null;
+
+    delete this._sharedSignals.screenCornersStartup;
+    delete this._sharedSignals.screenCornersMonitorsChanged;
+    delete this._sharedSignals.screenCornersWorkareasChanged;
   }
 
   _updateScreenCorners() {
@@ -177,21 +240,8 @@ export default class EssentialTweaksExtension extends Extension {
     }
   }
 
-  _enableShowOverviewOnStartup() {
-    if (this._originalHasOverview != null) {
-      Main.sessionMode.hasOverview = this._originalHasOverview;
-    }
-
-    if (this._overviewStartupHandler) {
-      Main.layoutManager.disconnect(this._overviewStartupHandler);
-    }
-
-    this._originalHasOverview = null;
-    this._overviewStartupHandler = null;
-  }
-
-  _disableShowOverviewOnStartup() {
-    if (!Main.layoutManager._startingUp || this._overviewStartupHandler) {
+  _enableNoOverviewOnStartup() {
+    if (!Main.layoutManager._startingUp) {
       return;
     }
 
@@ -203,16 +253,24 @@ export default class EssentialTweaksExtension extends Extension {
     Main.sessionMode.hasOverview = false;
 
     // Restore the original state after startup is complete
-    this._overviewStartupHandler = Main.layoutManager.connect('startup-complete', () => {
-      this._enableShowOverviewOnStartup();
-    });
+    this._sharedSignals.noOverviewOnStartup = ['startup-complete', this._disableNoOverviewOnStartup.bind(this)];
   }
 
-  _updateShowOverviewOnStartup() {
+  _disableNoOverviewOnStartup() {
+    if (this._originalHasOverview != null) {
+      Main.sessionMode.hasOverview = this._originalHasOverview;
+    }
+
+    this._originalHasOverview = null;
+
+    delete this._sharedSignals.noOverviewOnStartup;
+  }
+
+  _updateNoOverviewOnStartup() {
     if (this._settings.get_boolean('show-overview-on-startup')) {
-      this._enableShowOverviewOnStartup();
+      this._disableNoOverviewOnStartup();
     } else {
-      this._disableShowOverviewOnStartup();
+      this._enableNoOverviewOnStartup();
     }
   }
 

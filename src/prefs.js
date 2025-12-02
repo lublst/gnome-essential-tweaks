@@ -41,9 +41,15 @@ export default class EssentialTweaksPreferences extends ExtensionPreferences {
 
     const screenCornersRow = new Adw.SwitchRow({
       title: _('Screen Corners'),
-      subtitle: _('Slightly round the corners of the screen and the panel')
+      subtitle: _('Round the corners of the screen for a more premium look')
     });
     appearanceGroup.add(screenCornersRow);
+
+    const panelCornersRow = new Adw.SwitchRow({
+      title: _('Panel Corners'),
+      subtitle: _('Also round the corners of the panel')
+    });
+    appearanceGroup.add(panelCornersRow);
 
     const otherGroup = new Adw.PreferencesGroup({
       title: _('Other')
@@ -62,6 +68,7 @@ export default class EssentialTweaksPreferences extends ExtensionPreferences {
     window._settings.bind('click-to-close-overview', clickToCloseOverviewRow, 'active', Gio.SettingsBindFlags.DEFAULT);
     window._settings.bind('no-window-attention', noWindowAttentionRow, 'active', Gio.SettingsBindFlags.DEFAULT);
     window._settings.bind('screen-corners', screenCornersRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+    window._settings.bind('panel-corners', panelCornersRow, 'active', Gio.SettingsBindFlags.DEFAULT);
     window._settings.bind('show-overview-on-startup', showOverviewOnStartupRow, 'active', Gio.SettingsBindFlags.DEFAULT);
     window._settings.bind('workspace-wraparound', workspaceWraparoundRow, 'active', Gio.SettingsBindFlags.DEFAULT);
   }
