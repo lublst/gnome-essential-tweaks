@@ -2,6 +2,7 @@ import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import { updateClickToCloseOverview, disableClickToCloseOverview } from './lib/clickToCloseOverview.js';
+import { updateNoFavoriteNotification, disableNoFavoriteNotification } from './lib/noFavoriteNotification.js';
 import { updateNoWindowAttention, disableNoWindowAttention } from './lib/noWindowAttention.js';
 import { updatePanelCorners, disablePanelCorners } from './lib/panelCorners.js';
 import { updateScreenCorners, disableScreenCorners } from './lib/screenCorners.js';
@@ -19,6 +20,9 @@ export default class EssentialTweaksExtension extends Extension {
       ['click-to-close-overview',
         updateClickToCloseOverview.bind(this),
         disableClickToCloseOverview.bind(this)],
+      ['no-favorite-notification',
+        updateNoFavoriteNotification.bind(this),
+        disableNoFavoriteNotification.bind(this)],
       ['no-window-attention',
         updateNoWindowAttention.bind(this),
         disableNoWindowAttention.bind(this)],

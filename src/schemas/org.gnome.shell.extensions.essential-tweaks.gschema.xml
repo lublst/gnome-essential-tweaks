@@ -6,6 +6,10 @@
       <default>true</default>
     </key>
 
+    <key name="no-favorite-notification" type="b">
+      <default>true</default>
+    </key>
+
     <key name="no-window-attention" type="b">
       <default>true</default>
     </key>

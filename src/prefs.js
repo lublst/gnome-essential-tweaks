@@ -62,10 +62,17 @@ export default class EssentialTweaksPreferences extends ExtensionPreferences {
     });
     otherGroup.add(noWindowAttentionRow);
 
+    const noFavoriteNotificationRow = new Adw.SwitchRow({
+      title: _('No Favorite Notification'),
+      subtitle: _('Don\'t show a notification when pinning an app to the dash')
+    });
+    otherGroup.add(noFavoriteNotificationRow);
+
     // Bind settings
     window._settings = this.getSettings();
 
     window._settings.bind('click-to-close-overview', clickToCloseOverviewRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+    window._settings.bind('no-favorite-notification', noFavoriteNotificationRow, 'active', Gio.SettingsBindFlags.DEFAULT);
     window._settings.bind('no-window-attention', noWindowAttentionRow, 'active', Gio.SettingsBindFlags.DEFAULT);
     window._settings.bind('screen-corners', screenCornersRow, 'active', Gio.SettingsBindFlags.DEFAULT);
     window._settings.bind('panel-corners', panelCornersRow, 'active', Gio.SettingsBindFlags.DEFAULT);
