@@ -1,5 +1,7 @@
 import Meta from 'gi://Meta';
 
+import { InjectionManager } from 'resource:///org/gnome/shell/extensions/extension.js';
+
 export class WorkspaceWraparound {
   constructor(settings) {
     this._settings = settings;
@@ -7,6 +9,8 @@ export class WorkspaceWraparound {
     this._signal = this._settings.connect('changed::workspace-wraparound', () => {
       this.update();
     });
+
+    this._injectionManager = new InjectionManager();
   }
 
   update() {
@@ -18,11 +22,7 @@ export class WorkspaceWraparound {
   }
 
   enable() {
-    // Back up the original workspace prototype
-    this._originalWorkspaceProto = Meta.Workspace.prototype.get_neighbor;
-
-    // Monkey patching time
-    Meta.Workspace.prototype.get_neighbor = function (direction) {
+    this._injectionManager.overrideMethod(Meta.Workspace.prototype, 'get_neighbor', () => function (direction) {
       let index = this.index();
       let lastIndex = global.workspace_manager.n_workspaces - 1;
       let neighborIndex;
@@ -34,15 +34,11 @@ export class WorkspaceWraparound {
       }
 
       return global.workspace_manager.get_workspace_by_index(neighborIndex);
-    }
+    });
   }
 
   disable() {
-    if (this._originalWorkspaceProto) {
-      Meta.Workspace.prototype.get_neighbor = this._originalWorkspaceProto;
-    }
-
-    this._originalWorkspaceProto = null;
+    this._injectionManager.clear();
   }
 
   destroy() {
@@ -52,5 +48,6 @@ export class WorkspaceWraparound {
 
     this._settings = null;
     this._signal = null;
+    this._injectionManager = null;
   }
 }

@@ -1,5 +1,7 @@
 import * as AppFavorites from 'resource:///org/gnome/shell/ui/appFavorites.js';
 
+import { InjectionManager } from 'resource:///org/gnome/shell/extensions/extension.js';
+
 export class NoFavoriteNotification {
   constructor(settings) {
     this._settings = settings;
@@ -8,6 +10,8 @@ export class NoFavoriteNotification {
     this._signal = this._settings.connect('changed::no-favorite-notification', () => {
       this.update();
     });
+
+    this._injectionManager = new InjectionManager();
   }
 
   update() {
@@ -19,29 +23,17 @@ export class NoFavoriteNotification {
   }
 
   enable() {
-    // Back up the original favorites prototype
-    this._originalProto = {
-      addFavoriteAtPos: this._favorites.addFavoriteAtPos,
-      removeFavorite: this._favorites.removeFavorite
-    }
+    this._injectionManager.overrideMethod(this._favorites, 'addFavoriteAtPos', () => function (appId, pos) {
+      this._addFavorite(appId, pos);
+    });
 
-    // Override with methods that don't send notifications
-    Object.assign(this._favorites, {
-      addFavoriteAtPos(appId, pos) {
-        this._addFavorite(appId, pos);
-      },
-      removeFavorite(appId) {
-        this._removeFavorite(appId);
-      }
+    this._injectionManager.overrideMethod(this._favorites, 'removeFavorite', () => function (appId) {
+      this._removeFavorite(appId);
     });
   }
 
   disable() {
-    if (this._originalProto) {
-      Object.assign(this._favorites, this._originalProto);
-    }
-
-    this._originalProto = null;
+    this._injectionManager.clear();
   }
 
   destroy() {
@@ -52,5 +44,6 @@ export class NoFavoriteNotification {
     this._settings = null;
     this._favorites = null;
     this._signal = null;
+    this._injectionManager = null;
   }
 }
