@@ -1,5 +1,6 @@
-import Gio from 'gi://Gio';
 import Adw from 'gi://Adw';
+import Gio from 'gi://Gio';
+import Gtk from 'gi://Gtk';
 
 import { ExtensionPreferences, gettext as _ } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
@@ -80,8 +81,8 @@ export default class EssentialTweaksPreferences extends ExtensionPreferences {
     window._settings.bind('click-to-close-overview', clickToCloseOverviewRow, 'active', Gio.SettingsBindFlags.DEFAULT);
     window._settings.bind('no-favorite-notification', noFavoriteNotificationRow, 'active', Gio.SettingsBindFlags.DEFAULT);
     window._settings.bind('no-window-attention', noWindowAttentionRow, 'active', Gio.SettingsBindFlags.DEFAULT);
-    window._settings.bind('screen-corners', screenCornersRow, 'active', Gio.SettingsBindFlags.DEFAULT);
     window._settings.bind('panel-corners', panelCornersRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+    window._settings.bind('screen-corners', screenCornersRow, 'active', Gio.SettingsBindFlags.DEFAULT);
     window._settings.bind('show-overview-on-startup', showOverviewOnStartupRow, 'active', Gio.SettingsBindFlags.DEFAULT);
     window._settings.bind('workspace-wraparound', workspaceWraparoundRow, 'active', Gio.SettingsBindFlags.DEFAULT);
   }

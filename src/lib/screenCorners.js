@@ -115,10 +115,10 @@ class ScreenCorner extends St.DrawingArea {
     this._monitor = monitor;
     this._radius = 12 * scaleFactor;
 
-    this._update_corner_position();
+    this._updateCornerPosition();
   }
 
-  _update_corner_position() {
+  _updateCornerPosition() {
     switch (this._corner) {
       case Meta.DisplayCorner.TOPLEFT:
         this.set_position(
@@ -198,6 +198,6 @@ class ScreenCorner extends St.DrawingArea {
     super.vfunc_style_changed();
 
     this.set_size(this._radius, this._radius);
-    this._update_corner_position();
+    this._updateCornerPosition();
   }
 }

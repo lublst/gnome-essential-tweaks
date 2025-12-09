@@ -78,8 +78,8 @@ export class PanelCorners {
     this._removeCorners();
 
     // Create new panel corners
-    Main.panel._leftCorner = new PanelCorner(St.Side.LEFT);
-    Main.panel._rightCorner = new PanelCorner(St.Side.RIGHT);
+    Main.panel._leftCorner = new PanelCorner(this._settings, St.Side.LEFT);
+    Main.panel._rightCorner = new PanelCorner(this._settings, St.Side.RIGHT);
 
     this._updateCorner(Main.panel._leftCorner);
     this._updateCorner(Main.panel._rightCorner);
@@ -118,21 +118,27 @@ class PanelCorner extends St.DrawingArea {
     GObject.registerClass(this);
   }
 
-  constructor(side) {
+  constructor(settings, side) {
     super({ style_class: 'panel-corner' });
 
     const scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
 
+    this._settings = settings;
     this._side = side;
     this._radius = 12 * scaleFactor;
 
-    this._positionChangeHandler = Main.panel.connect('notify::position', this._update_corner_position.bind(this));
-    this._sizeChangeHandler = Main.panel.connect('notify::size', this._update_corner_position.bind(this));
+    this._signals = [
+      this._settings.connect('changed::panel-corners-left-color', this.vfunc_style_changed.bind(this)),
+      this._settings.connect('changed::panel-corners-right-color', this.vfunc_style_changed.bind(this))
+    ];
+
+    this._positionChangeHandler = Main.panel.connect('notify::position', this._updateCornerPosition.bind(this));
+    this._sizeChangeHandler = Main.panel.connect('notify::size', this._updateCornerPosition.bind(this));
 
     this.set_opacity(0);
   }
 
-  _update_corner_position() {
+  _updateCornerPosition() {
     const childBox = new Clutter.ActorBox();
 
     switch (this._side) {
@@ -158,7 +164,7 @@ class PanelCorner extends St.DrawingArea {
 
   vfunc_repaint() {
     const cr = this.get_context();
-    const color = Cogl.color_from_string('#000000ff')[1];
+    const color = this._getCornerColor();
     const radius = this._radius;
 
     cr.setOperator(Cairo.Operator.SOURCE);
@@ -190,7 +196,7 @@ class PanelCorner extends St.DrawingArea {
     super.vfunc_style_changed();
 
     this.set_size(this._radius, this._radius);
-    this._update_corner_position();
+    this._updateCornerPosition();
 
     const panelClass = Main.panel.get_style_pseudo_class();
     const inOverview = panelClass && panelClass.includes('overview');
@@ -203,7 +209,16 @@ class PanelCorner extends St.DrawingArea {
     });
   }
 
+  _getCornerColor() {
+    const side = this._side === St.Side.LEFT ? 'left' : 'right';
+    const color = this._settings.get_string(`panel-corners-${side}-color`);
+
+    return Cogl.color_from_string(color)[1];
+  }
+
   disconnectSignals() {
+    this._signals.forEach(signal => this._settings.disconnect(signal));
+
     if (this._positionChangeHandler) {
       Main.panel.disconnect(this._positionChangeHandler);
     }
@@ -212,6 +227,8 @@ class PanelCorner extends St.DrawingArea {
       Main.panel.disconnect(this._sizeChangeHandler);
     }
 
+    this._settings = null;
+    this._signals = null;
     this._positionChangeHandler = null;
     this._sizeChangeHandler = null;
   }

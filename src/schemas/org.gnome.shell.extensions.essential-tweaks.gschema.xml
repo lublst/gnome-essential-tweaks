@@ -18,6 +18,14 @@
       <default>true</default>
     </key>
 
+    <key name="panel-corners-left-color" type="s">
+      <default>'#000000'</default>
+    </key>
+
+    <key name="panel-corners-right-color" type="s">
+      <default>'#000000'</default>
+    </key>
+
     <key name="screen-corners" type="b">
       <default>true</default>
     </key>
