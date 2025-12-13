@@ -1,10 +1,14 @@
 import Adw from 'gi://Adw';
+import Gdk from 'gi://Gdk';
 import Gio from 'gi://Gio';
+import Gtk from 'gi://Gtk';
 
 import { ExtensionPreferences, gettext as _ } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
 export default class EssentialTweaksPreferences extends ExtensionPreferences {
   fillPreferencesWindow(window) {
+    window._settings = this.getSettings();
+
     const behaviorPage = new Adw.PreferencesPage({
       title: _('Behavior'),
       icon_name: 'org.gnome.Settings-system-symbolic'
@@ -80,8 +84,29 @@ export default class EssentialTweaksPreferences extends ExtensionPreferences {
     });
     cornersGroup.add(panelCornersRow);
 
-    // Bind settings
-    window._settings = this.getSettings();
+    const panelLeftCornerColorButton = new Gtk.ColorDialogButton({
+      dialog: new Gtk.ColorDialog(),
+    });
+    this._connectColorButton(panelLeftCornerColorButton, window._settings, 'panel-left-corner-color');
+
+    const panelRightCornerColorButton = new Gtk.ColorDialogButton({
+      dialog: new Gtk.ColorDialog(),
+    });
+    this._connectColorButton(panelRightCornerColorButton, window._settings, 'panel-right-corner-color');
+
+    const panelLeftCornerColorRow = new Adw.ActionRow({
+      title: _('Left Panel Corner Color'),
+    });
+    panelLeftCornerColorRow.add_suffix(panelLeftCornerColorButton);
+    panelLeftCornerColorRow.set_activatable_widget(panelLeftCornerColorButton);
+    cornersGroup.add(panelLeftCornerColorRow);
+
+    const panelRightCornerColorRow = new Adw.ActionRow({
+      title: _('Right Panel Corner Color'),
+    });
+    panelRightCornerColorRow.add_suffix(panelRightCornerColorButton);
+    panelRightCornerColorRow.set_activatable_widget(panelRightCornerColorButton);
+    cornersGroup.add(panelRightCornerColorRow);
 
     window._settings.bind('click-to-close-overview', clickToCloseOverviewRow, 'active', Gio.SettingsBindFlags.DEFAULT);
     window._settings.bind('keep-favorites-in-app-grid', keepFavoritesInAppGridRow, 'active', Gio.SettingsBindFlags.DEFAULT);
@@ -91,5 +116,16 @@ export default class EssentialTweaksPreferences extends ExtensionPreferences {
     window._settings.bind('screen-corners', screenCornersRow, 'active', Gio.SettingsBindFlags.DEFAULT);
     window._settings.bind('show-overview-on-startup', showOverviewOnStartupRow, 'active', Gio.SettingsBindFlags.DEFAULT);
     window._settings.bind('workspace-wraparound', workspaceWraparoundRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+  }
+
+  _connectColorButton(button, settings, key) {
+    const rgba = new Gdk.RGBA();
+
+    rgba.parse(settings.get_string(key));
+    button.set_rgba(rgba);
+
+    button.connect('notify::rgba', () => {
+      settings.set_string(key, button.get_rgba().to_string());
+    });
   }
 }
