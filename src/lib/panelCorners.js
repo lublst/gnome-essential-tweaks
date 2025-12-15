@@ -214,9 +214,15 @@ class PanelCorner extends St.DrawingArea {
 
   _getCornerColor() {
     const side = this._side === St.Side.LEFT ? 'left' : 'right';
-    const color = this._settings.get_string(`panel-${side}-corner-color`);
+    const value = this._settings.get_string(`panel-${side}-corner-color`);
 
-    return Cogl.color_from_string(color)[1];
+    const [ok, color] = Cogl.color_from_string(value);
+
+    if (ok) {
+      return color;
+    }
+
+    return Cogl.color_from_string('#000000')[1];
   }
 
   disconnectSignals() {

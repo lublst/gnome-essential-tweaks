@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="adwaita" version="1.0"/>
+
+  <object class="AdwPreferencesPage" id="behavior-page">
+    <property name="title" translatable="yes">Behavior</property>
+    <property name="icon-name">org.gnome.Settings-system-symbolic</property>
+
+    <child>
+      <object class="AdwPreferencesGroup">
+        <property name="title" translatable="yes">Overview and Workspaces</property>
+
+        <child>
+          <object class="AdwSwitchRow" id="show-overview-on-startup">
+            <property name="title" translatable="yes">Show Overview on Startup</property>
+            <property name="subtitle" translatable="yes">Toggle between showing the overview or the desktop on startup</property>
+          </object>
+        </child>
+
+        <child>
+          <object class="AdwSwitchRow" id="click-to-close-overview">
+            <property name="title" translatable="yes">Click to Close the Overview</property>
+            <property name="subtitle" translatable="yes">Close the overview when clicking on the empty space around the background</property>
+          </object>
+        </child>
+
+        <child>
+          <object class="AdwSwitchRow" id="workspace-wraparound">
+            <property name="title" translatable="yes">Workspace Wraparound</property>
+            <property name="subtitle" translatable="yes">Allow switching from the last workspace to the first and vice versa</property>
+          </object>
+        </child>
+
+      </object>
+    </child>
+
+    <child>
+      <object class="AdwPreferencesGroup">
+        <property name="title" translatable="yes">Apps and Windows</property>
+
+        <child>
+          <object class="AdwSwitchRow" id="no-window-ready-notifications">
+            <property name="title" translatable="yes">No Window Attention Notifications</property>
+            <property name="subtitle" translatable="yes">Focus new windows instead of showing a "window is ready" notification</property>
+          </object>
+        </child>
+
+        <child>
+          <object class="AdwSwitchRow" id="no-favorite-notifications">
+            <property name="title" translatable="yes">No Favorite Notifications</property>
+            <property name="subtitle" translatable="yes">Don't show notifications when pinning apps to the dash</property>
+          </object>
+        </child>
+
+        <child>
+          <object class="AdwSwitchRow" id="keep-favorites-in-app-grid">
+            <property name="title" translatable="yes">Keep Favorites in App Grid</property>
+            <property name="subtitle" translatable="yes">Because the app grid is for all apps</property>
+          </object>
+        </child>
+
+      </object>
+    </child>
+
+  </object>
+
+  <object class="AdwPreferencesPage" id="appearance-page">
+    <property name="title" translatable="yes">Appearance</property>
+    <property name="icon-name">org.gnome.Settings-appearance-symbolic</property>
+
+    <child>
+      <object class="AdwPreferencesGroup">
+        <property name="title" translatable="yes">Corners</property>
+
+        <child>
+          <object class="AdwSwitchRow" id="screen-corners">
+            <property name="title" translatable="yes">Screen Corners</property>
+            <property name="subtitle" translatable="yes">Round the corners of the screen for a more premium look</property>
+          </object>
+        </child>
+
+        <child>
+          <object class="AdwSwitchRow" id="panel-corners">
+            <property name="title" translatable="yes">Panel Corners</property>
+            <property name="subtitle" translatable="yes">Also round the corners of the top panel</property>
+          </object>
+        </child>
+
+        <child>
+          <object class="AdwActionRow" id="panel-corner-colors">
+            <property name="title" translatable="yes">Panel Corner Colors</property>
+            <property name="subtitle" translatable="yes">Match the panel color when using Blur my Shell or a custom theme</property>
+
+            <child type="suffix">
+              <object class="GtkBox">
+                <property name="valign">center</property>
+                <property name="spacing">6</property>
+
+                <child>
+                  <object class="GtkColorDialogButton" id="panel-left-corner-color"/>
+                </child>
+
+                <child>
+                  <object class="GtkColorDialogButton" id="panel-right-corner-color"/>
+                </child>
+
+              </object>
+            </child>
+
+          </object>
+        </child>
+
+      </object>
+    </child>
+
+  </object>
+
+</interface>
