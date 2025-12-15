@@ -2,9 +2,13 @@ import Cairo from 'cairo';
 import Cogl from 'gi://Cogl';
 import GObject from 'gi://GObject';
 import Meta from 'gi://Meta';
+import Shell from 'gi://Shell';
 import St from 'gi://St';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as Screenshot from 'resource:///org/gnome/shell/ui/screenshot.js';
+
+import { InjectionManager } from 'resource:///org/gnome/shell/extensions/extension.js';
 
 export class ScreenCorners {
   constructor(settings) {
@@ -13,6 +17,8 @@ export class ScreenCorners {
     this._signal = this._settings.connect('changed::screen-corners', () => {
       this.update();
     });
+
+    this._injectionManager = new InjectionManager();
   }
 
   update() {
@@ -24,6 +30,8 @@ export class ScreenCorners {
   }
 
   enable() {
+    const module = this;
+
     this._startupHandler = Main.layoutManager.connect('startup-complete', () => {
       this._updateCorners();
     });
@@ -37,9 +45,34 @@ export class ScreenCorners {
     });
 
     this._updateCorners();
+
+    // Hide the corners in screenshots and screen recordings
+    this._injectionManager.overrideMethod(Shell.Screenshot.prototype, 'screenshot_stage_to_content', originalFn => async function () {
+      module._removeCorners();
+
+      try {
+        return await originalFn.call(this);
+      } finally {
+        module._updateCorners();
+      }
+    });
+
+    this._injectionManager.overrideMethod(Screenshot.ScreenshotUI.prototype, '_setScreencastInProgress', originalFn => function (inProgress) {
+      if (inProgress) {
+        module._removeCorners();
+      }
+
+      originalFn.call(this, inProgress);
+
+      if (!inProgress) {
+        module._updateCorners();
+      }
+    });
   }
 
   disable() {
+    this._injectionManager.clear();
+
     if (this._startupHandler) {
       Main.layoutManager.disconnect(this._startupHandler);
     }
@@ -66,11 +99,16 @@ export class ScreenCorners {
 
     this._settings = null;
     this._signal = null;
+    this._injectionManager = null;
   }
 
   _updateCorners() {
     // Remove old corners
     this._removeCorners();
+
+    if (Main.screenshotUI.screencast_in_progress) {
+      return;
+    }
 
     // Create new corners on every monitor
     const corners = [
@@ -84,7 +122,7 @@ export class ScreenCorners {
       corners.forEach(corner => {
         const actor = new ScreenCorner(corner, monitor);
 
-        Main.layoutManager.addTopChrome(actor);
+        Main.layoutManager.addTopChrome(actor, { trackFullscreen: true });
         Main.layoutManager._screenCorners.push(actor);
       });
     });

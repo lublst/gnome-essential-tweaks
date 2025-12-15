@@ -4,7 +4,7 @@ enable quality of life features. It also aims to reduce the time spent
 searching for compatible extensions when setting up a new system or after
 updating GNOME.
 
-![Preferences Window](assets/prefs.png)
+![Preferences Window](assets/prefs.gif)
 
 ## Attributions
 This extension partially contains code adapted from the following projects:

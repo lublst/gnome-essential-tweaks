@@ -33,7 +33,7 @@ export class KeepFavoritesInAppGrid {
   }
 
   enable() {
-    const mod = this;
+    const module = this;
 
     // Make the app grid show all apps by passing it the dummy favorites
     this._injectionManager.overrideMethod(this._dummyFavorites, 'isFavorite', () => function () {
@@ -41,7 +41,7 @@ export class KeepFavoritesInAppGrid {
     });
 
     this._injectionManager.overrideMethod(AppDisplay.prototype, '_redisplay', originalFn => function () {
-      this._appFavorites = mod._dummyFavorites;
+      this._appFavorites = module._dummyFavorites;
 
       originalFn.call(this);
 
@@ -58,16 +58,16 @@ export class KeepFavoritesInAppGrid {
 
     // Show favorites in FolderView
     this._injectionManager.overrideMethod(FolderView.prototype, '_redisplay', originalFn => function () {
-      this._appFavorites = mod._dummyFavorites;
+      this._appFavorites = module._dummyFavorites;
 
       originalFn.call(this);
     });
 
     // Remove apps from favorites when they are dragged from the dash to the app grid
     this._injectionManager.overrideMethod(this._appDisplay, 'acceptDrop', originalFn => function (source) {
-      if (mod._isDashIcon(source)) {
-        if (mod._favorites.isFavorite(source.id)) {
-          mod._favorites.removeFavorite(source.id);
+      if (module._isDashIcon(source)) {
+        if (module._favorites.isFavorite(source.id)) {
+          module._favorites.removeFavorite(source.id);
         }
 
         return DragDropResult.SUCCESS;
@@ -77,7 +77,7 @@ export class KeepFavoritesInAppGrid {
     });
 
     this._injectionManager.overrideMethod(this._appDisplay, '_onDragMotion', originalFn => function (dragEvent) {
-      if (mod._isDashIcon(dragEvent.source)) {
+      if (module._isDashIcon(dragEvent.source)) {
         return DragMotionResult.CONTINUE;
       }
 
