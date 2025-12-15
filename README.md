@@ -18,7 +18,7 @@ This extension partially contains code adapted from the following projects:
 - Just Perfection by Javad Rahmatzadeh\
   https://gitlab.gnome.org/jrahmatzadeh/just-perfection
 
-- Pinned Apps in App Grid by Bruno Silva
+- Pinned Apps in App Grid by Bruno Silva\
   https://github.com/brunos3d/pinned-apps-in-appgrid
 
 - Panel Corners by Aurélien Hamy\

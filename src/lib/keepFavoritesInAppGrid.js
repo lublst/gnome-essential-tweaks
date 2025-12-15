@@ -5,7 +5,7 @@ import * as AppFavorites from 'resource:///org/gnome/shell/ui/appFavorites.js';
 
 import { AppDisplay, FolderView } from 'resource:///org/gnome/shell/ui/appDisplay.js';
 import { DashIcon } from 'resource:///org/gnome/shell/ui/dash.js';
-import { DragDropResult } from 'resource:///org/gnome/shell/ui/dnd.js';
+import { DragDropResult, DragMotionResult } from 'resource:///org/gnome/shell/ui/dnd.js';
 import { InjectionManager } from 'resource:///org/gnome/shell/extensions/extension.js';
 
 export class KeepFavoritesInAppGrid {
@@ -14,7 +14,7 @@ export class KeepFavoritesInAppGrid {
     this._appDisplay = Main.overview._overview.controls.appDisplay;
     this._favorites = AppFavorites.getAppFavorites();
 
-    // Create an AppFavorites instance that later pretends to have no favorites
+    // Create a dummy AppFavorites instance that pretends to have no favorites
     this._dummyFavorites = new this._favorites.constructor();
 
     this._signal = this._settings.connect('changed::keep-favorites-in-app-grid', () => {
@@ -35,7 +35,11 @@ export class KeepFavoritesInAppGrid {
   enable() {
     const mod = this;
 
-    // Show favorites in AppDisplay
+    // Make the app grid show all apps by passing it the dummy favorites
+    this._injectionManager.overrideMethod(this._dummyFavorites, 'isFavorite', () => function () {
+      return false;
+    });
+
     this._injectionManager.overrideMethod(AppDisplay.prototype, '_redisplay', originalFn => function () {
       this._appFavorites = mod._dummyFavorites;
 
@@ -61,11 +65,7 @@ export class KeepFavoritesInAppGrid {
 
     // Remove apps from favorites when they are dragged from the dash to the app grid
     this._injectionManager.overrideMethod(this._appDisplay, 'acceptDrop', originalFn => function (source) {
-      // Gjs_dash-to-dock_micxgx_gmail_com_appIcons_DockAppIcon
-      // Gjs_dash-to-panel_jderose9_github_com_appIcons_TaskbarAppIcon
-      const isDashIcon = source instanceof DashIcon || GObject.type_name(source).endsWith('AppIcon');
-
-      if (isDashIcon) {
+      if (mod._isDashIcon(source)) {
         if (mod._favorites.isFavorite(source.id)) {
           mod._favorites.removeFavorite(source.id);
         }
@@ -76,8 +76,12 @@ export class KeepFavoritesInAppGrid {
       return originalFn.call(this, source);
     });
 
-    this._injectionManager.overrideMethod(this._dummyFavorites, 'isFavorite', () => function () {
-      return false;
+    this._injectionManager.overrideMethod(this._appDisplay, '_onDragMotion', originalFn => function (dragEvent) {
+      if (mod._isDashIcon(dragEvent.source)) {
+        return DragMotionResult.CONTINUE;
+      }
+
+      return originalFn.call(this, dragEvent);
     });
 
     this._appDisplay._disconnectDnD();
@@ -104,5 +108,15 @@ export class KeepFavoritesInAppGrid {
     this._favorites = null;
     this._dummyFavorites = null;
     this._injectionManager = null;
+  }
+
+  _isDashIcon(source) {
+    const typeName = GObject.type_name(source);
+
+    // Gjs_dash-to-dock_micxgx_gmail_com_appIcons_DockAppIcon
+    // Gjs_dash-to-panel_jderose9_github_com_appIcons_TaskbarAppIcon
+    return source instanceof DashIcon
+      || typeName.endsWith('DockAppIcon')
+      || typeName.endsWith('TaskbarAppIcon');
   }
 }

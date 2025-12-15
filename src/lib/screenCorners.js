@@ -84,7 +84,7 @@ export class ScreenCorners {
       corners.forEach(corner => {
         const actor = new ScreenCorner(corner, monitor);
 
-        Main.layoutManager.addTopChrome(actor, { trackFullscreen: true });
+        Main.layoutManager.addTopChrome(actor);
         Main.layoutManager._screenCorners.push(actor);
       });
     });

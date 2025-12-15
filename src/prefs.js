@@ -9,14 +9,17 @@ export default class EssentialTweaksPreferences extends ExtensionPreferences {
     const settings = this.getSettings();
     const builder = new Gtk.Builder();
 
+    // Load the UI file
     builder.add_from_file(`${this.path}/prefs.ui`);
 
+    // Add the preference pages to the window
     const behaviorPage = builder.get_object('behavior-page');
     const appearancePage = builder.get_object('appearance-page');
 
     window.add(behaviorPage);
     window.add(appearancePage);
 
+    // Bind the UI elements to the settings
     const properties = [
       'click-to-close-overview',
       'keep-favorites-in-app-grid',
@@ -41,6 +44,7 @@ export default class EssentialTweaksPreferences extends ExtensionPreferences {
     const rgba = new Gdk.RGBA();
     const color = settings.get_string(key);
 
+    // Fallback to black if the stored color string can't be parsed
     if (!rgba.parse(color)) {
       rgba.parse('#000000');
     }
