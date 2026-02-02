@@ -29,8 +29,9 @@ export class ClickToCloseOverview {
       }
 
       // Ignore clicks on the search box
-      const searchEntry = Main.overview._overview._controls._searchEntry;
       const [x, y] = global.get_pointer();
+      const searchEntry = Main.overview._overview._controls._searchEntry;
+
       let actor = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
 
       while (actor) {

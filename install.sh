@@ -6,18 +6,18 @@ for arg in "$@"; do
     [ "$arg" = "--bundle" ] && BUNDLE=1
 done
 
-NAME=essential-tweaks
-DOMAIN=lublst.github.io
-ZIP_NAME=$NAME@$DOMAIN.zip
+NAME="essential-tweaks"
+DOMAIN="lublst.github.io"
+ZIP_NAME="$NAME@$DOMAIN.zip"
 
-echo -e ":: Creating extension bundle..."
+echo ":: Creating extension bundle..."
 cd src
-zip -qr "$ZIP_NAME" *
+zip -qr "$ZIP_NAME" .
 
-if [ $BUNDLE -eq 1 ]; then
+if [ "$BUNDLE" -eq 1 ]; then
     mv "$ZIP_NAME" ..
 else
-    echo -e ":: Installing extension..."
+    echo ":: Installing extension..."
     gnome-extensions install -f "$ZIP_NAME"
     rm "$ZIP_NAME"
 fi
