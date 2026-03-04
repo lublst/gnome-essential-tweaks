@@ -3,9 +3,10 @@
   "name": "Essential Tweaks",
   "settings-schema": "org.gnome.shell.extensions.essential-tweaks",
   "shell-version": [
-    "49"
+    "49",
+    "50"
   ],
   "url": "https://github.com/lublst/gnome-essential-tweaks",
   "uuid": "essential-tweaks@lublst.github.io",
-  "version": 8
+  "version": 9
 }
