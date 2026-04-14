@@ -126,7 +126,7 @@ class PanelCorner extends St.DrawingArea {
 
     this._settings = settings;
     this._side = side;
-    this._radius = 12 * scaleFactor;
+    this._radius = 15 * scaleFactor;
 
     this._signals = [
       this._settings.connect('changed::panel-left-corner-color', this.vfunc_style_changed.bind(this)),

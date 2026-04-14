@@ -151,7 +151,7 @@ class ScreenCorner extends St.DrawingArea {
 
     this._corner = corner;
     this._monitor = monitor;
-    this._radius = 12 * scaleFactor;
+    this._radius = 15 * scaleFactor;
 
     this._updateCornerPosition();
   }
